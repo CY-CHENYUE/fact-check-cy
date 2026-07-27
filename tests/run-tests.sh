@@ -68,6 +68,7 @@ for text in \
   "机器初判" \
   "人工确认" \
   "开放式探索由 deep-research 负责" \
+  "文本抽取顺序不等于视觉对应关系" \
   "不要把“未找到”写成“不存在”"; do
   require_text "$SKILL" "$text"
 done
@@ -93,7 +94,7 @@ with open(sys.argv[1], encoding="utf-8") as handle:
 
 assert data["skill_name"] == "fact-check-cy"
 evals = data["evals"]
-assert len(evals) >= 12
+assert len(evals) >= 14
 assert len({item["id"] for item in evals}) == len(evals)
 assert len({item["eval_name"] for item in evals}) == len(evals)
 
@@ -116,6 +117,7 @@ for required in {
     "restricted-corpus-audit",
     "open-research-route-out",
     "deep-research-handoff",
+    "chart-label-value-mapping",
 }:
     assert required in names
 PY

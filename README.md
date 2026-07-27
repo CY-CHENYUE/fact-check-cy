@@ -39,10 +39,20 @@
 
 ## 安装
 
-### Codex
+### Codex：当前工作区使用（课堂推荐）
 
 ```bash
-git clone https://github.com/CY-CHENYUE/fact-check-cy.git ~/.codex/skills/fact-check-cy
+mkdir -p .agents/skills
+git clone https://github.com/CY-CHENYUE/fact-check-cy.git .agents/skills/fact-check-cy
+```
+
+Codex 会从当前目录向仓库根扫描 `.agents/skills`。把 Skill 放在工作区中，可以让课程、项目和版本保持同一边界。
+
+### Codex：用户级安装
+
+```bash
+mkdir -p ~/.agents/skills
+git clone https://github.com/CY-CHENYUE/fact-check-cy.git ~/.agents/skills/fact-check-cy
 ```
 
 ### Claude Code
@@ -56,8 +66,8 @@ git clone https://github.com/CY-CHENYUE/fact-check-cy.git ~/.claude/skills/fact-
 需要锁定课堂或生产使用版本时，安装后切换到指定 commit，并记录实际 HEAD：
 
 ```bash
-git -C ~/.codex/skills/fact-check-cy checkout <commit>
-git -C ~/.codex/skills/fact-check-cy rev-parse HEAD
+git -C .agents/skills/fact-check-cy checkout <commit>
+git -C .agents/skills/fact-check-cy rev-parse HEAD
 ```
 
 ## 使用示例

@@ -156,6 +156,8 @@ PY
 
 require_text "$README" "assets/wechat-qr.jpg"
 require_text "$README" "Apache-2.0"
+require_text "$README" ".agents/skills"
+reject_text "$README" "~/.codex/skills"
 require_text "$ROOT/LICENSE" "Apache License"
 
 skill_lines="$(wc -l <"$SKILL")"

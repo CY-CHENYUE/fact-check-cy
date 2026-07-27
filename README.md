@@ -39,14 +39,14 @@
 
 ## 安装
 
-### Codex：当前工作区使用（课堂推荐）
+### Codex：项目级安装（推荐）
 
 ```bash
 mkdir -p .agents/skills
 git clone https://github.com/CY-CHENYUE/fact-check-cy.git .agents/skills/fact-check-cy
 ```
 
-Codex 会从当前目录向仓库根扫描 `.agents/skills`。把 Skill 放在工作区中，可以让课程、项目和版本保持同一边界。
+Codex 会从当前目录向仓库根扫描 `.agents/skills`。把 Skill 放在项目中，可以让协作者共享一致的能力边界，也便于锁定可复现版本。
 
 ### Codex：用户级安装
 
@@ -63,12 +63,22 @@ git clone https://github.com/CY-CHENYUE/fact-check-cy.git ~/.claude/skills/fact-
 
 安装后新开一个任务，让工具重新发现 Skill。目标目录已经存在时不要直接覆盖；先检查它是旧安装、软链接还是本地开发副本。
 
-需要锁定课堂或生产使用版本时，安装后切换到指定 commit，并记录实际 HEAD：
+需要锁定可复现版本时，安装后切换到指定 commit，并记录实际 HEAD：
 
 ```bash
 git -C .agents/skills/fact-check-cy checkout <commit>
 git -C .agents/skills/fact-check-cy rev-parse HEAD
 ```
+
+### 验证第一次成功
+
+新开一个任务并输入：
+
+```text
+使用 $fact-check-cy 核验“这项政策已经在全国正式施行”，重点检查正式文本、生效日和适用主体；把事实结论、表达风险和工作流状态分开。
+```
+
+成功时，Agent 会保留原始表述、拆分可核声明、追踪适配证据，并使用规定的结论标签；机器结果不会被写成人工确认。
 
 ## 使用示例
 
@@ -129,8 +139,7 @@ bash tests/run-tests.sh
 
 ## 同步与许可
 
-- canonical source：`cc-skills/fact-check-cy/`
-- 当前独立仓库是发布镜像，不是新的编辑源。
+- 本仓库提供可直接安装的完整 Skill 包。
 - License：Apache-2.0
 
 ## 交流

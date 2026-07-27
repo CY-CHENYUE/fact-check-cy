@@ -1,76 +1,128 @@
 # fact-check-cy
 
-调研报告事实核查与质控 skill。AI 生成的 URL 错误率约 60%，精确数字常有"创造性合并"幻觉——本 skill 自动核查报告中所有 URL 是否真实可达、数字是否能溯源、关键论点是否有 ≥2 个独立信源支撑、信源是否权威、有无自相矛盾。
+一个通用的事实核查与证据审计 Skill：把数字、引文、链接、报告、网页、图表和媒体内容拆成可复核的“声明—证据—结论”记录。
+
+它不靠固定网站白名单、链接数量或百分制可信度给材料盖章，而是检查证据是否真的支持当前声明，以及时间、地域、对象、统计口径和表达强度是否匹配。
+
+## 适合什么任务
+
+- 核验一句事实、一个数字或一段引文；
+- 审计报告中的 URL、统计口径和关键结论；
+- 检查公司披露能否支持行业级判断；
+- 区分法规已经公布、已经施行或已经失效；
+- 识别循环转载、共同信源、断章取义和过度外推；
+- 核查图片、视频的来源记录与事件叙述。
+
+不适合从零探索“这个行业现在发生了什么”。开放式问题先交给 `deep-research`，形成候选来源和待核声明后再进入本 Skill。
+
+## 工作方式
+
+```text
+保留原始表述
+→ 拆成原子声明
+→ 盘点已有证据
+→ 追到原始出处并寻找反证
+→ 检查声明与证据的适配关系
+→ 输出结论、表达风险、限制和建议动作
+```
+
+结论只使用：
+
+- 支持
+- 不支持
+- 部分支持
+- 证据冲突
+- 证据不足
+- 不可核验
+
+机器核验默认标记为“机器初判”。医疗、法律、金融、安全和其他高风险判断仍需要适格人员复核。
 
 ## 安装
 
+### Codex
+
 ```bash
-cd ~/.claude/skills
-git clone https://github.com/CY-CHENYUE/fact-check-cy.git
+git clone https://github.com/CY-CHENYUE/fact-check-cy.git ~/.codex/skills/fact-check-cy
 ```
 
-## 触发词
+### Claude Code
 
-- 事实核查、查证、核实数据、验证报告、溯源
-- 看看 URL 有没有问题、这些数字靠不靠谱
-- 三角验证、CRAAP、核对引用
-- fact check、verify sources
-
-**主动触发场景**：刚完成 deep-research / market-researcher-cy / competitive-analyst-cy 调研、即将交付报告或做关键决策时。
-
-## 核心方法（基于市场调研 SOP P4）
-
-| 模块 | 内容 |
-|---|---|
-| **SIFT 快筛** | Stop / Investigate / Find better / Trace claims |
-| **CRAAP 深评** | Currency 时效性 / Relevance 相关性 / Authority 权威性 / Accuracy 准确性 / Purpose 目的性 |
-| **四维三角验证** | 数据源 / 方法论 / 调查者 / 理论 4 类交叉 |
-| **AI 幻觉 7 项检查** | 精确数字溯源 / 张冠李戴 / URL 验证 / 逻辑一致性 / 过度外推 / 时间线 / 综合幻觉 |
-
-详细方法论与评分细则见 [reference.md](./reference.md)。
-
-## 双档模式
-
-| 模式 | 适用 | 时间 | 内容 |
-|---|---|---|---|
-| **light**（默认） | 日常调研、初步判断 | ~5 分钟 | URL 健康度 + AI 幻觉 7 项 + 关键数字溯源 + 基础 ≥2 源交叉 |
-| **deep** | 战略决策、IP 引入这类高赌注场景 | ~15-20 分钟 | light + 完整 CRAAP 5 维 + 四维三角验证 |
-
-触发示例：
-- "核查这份报告"（light，默认）
-- "深度核查这份报告"（deep）
-- "这个 940 万的数据是真的吗"（单点核查）
-
-## 输出
-
-按以下结构生成 markdown 核查报告：
-
-1. 总览（可信度评分 + 通过/待补强/不通过统计）
-2. URL 健康度（X / Y 个）
-3. 数据点溯源（X / Y 个）
-4. CRAAP 评估（仅 deep 模式）
-5. 三角验证缺口
-6. AI 幻觉 7 项 checklist
-7. 矛盾检测
-8. 行动建议（top 3 风险：必删 / 必补源 / 建议核实）
-
-## 工具依赖
-
-仅依赖 web 工具（无外部 API、无浏览器自动化、无付费数据源）：
-
-- WebFetch、WebSearch
-- Read、Grep、Glob、Bash
-
-## 与其他 skill 的协作
-
+```bash
+git clone https://github.com/CY-CHENYUE/fact-check-cy.git ~/.claude/skills/fact-check-cy
 ```
-deep-research / market-researcher-cy / competitive-analyst-cy
-       │
-       │ （输出调研报告）
-       ↓
-   fact-check-cy ←───── 用户触发：「核查一下」
-       │
-       │ （输出核查报告 + 风险清单）
-       ↓
-  人工拍板修改报告
+
+安装后新开一个任务，让工具重新发现 Skill。目标目录已经存在时不要直接覆盖；先检查它是旧安装、软链接还是本地开发副本。
+
+需要锁定课堂或生产使用版本时，安装后切换到指定 commit，并记录实际 HEAD：
+
+```bash
+git -C ~/.codex/skills/fact-check-cy checkout <commit>
+git -C ~/.codex/skills/fact-check-cy rev-parse HEAD
 ```
+
+## 使用示例
+
+```text
+使用 $fact-check-cy 核验“这项政策已经在全国正式施行”，重点检查正式文本、生效日和适用主体。
+```
+
+```text
+使用 $fact-check-cy 审计这份报告。逐条检查数字、引文和 URL 是否真的支持相邻结论，不要直接修改原文。
+```
+
+```text
+使用 $fact-check-cy 检查这张图片的最早来源、编辑或生成证据，以及配文所说的时间和地点。
+```
+
+## 与 deep-research 配合
+
+```text
+开放问题
+→ deep-research 建立信息版图和候选发现
+→ 人选择关键待核声明
+→ fact-check-cy 判断证据支持关系
+→ 把可写、需限定和暂不可写的结论交给后续报告
+```
+
+两项 Skill 不重复同一阶段：`deep-research` 不给候选声明盖“已证实”的章，`fact-check-cy` 也不把宽泛主题重新做成开放式调研。
+
+## 附带脚本
+
+`scripts/inventory_evidence.py` 可以从文本或 Markdown 中盘点 URL、数字和日期：
+
+```bash
+python3 scripts/inventory_evidence.py path/to/report.md --format markdown
+```
+
+它只生成证据线索清单，不判断真假，也不替代逐声明核验。
+
+## 目录
+
+```text
+fact-check-cy/
+├── SKILL.md
+├── agents/openai.yaml
+├── references/
+├── scripts/inventory_evidence.py
+├── evals/evals.json
+├── tests/run-tests.sh
+├── assets/wechat-qr.jpg
+├── README.md
+└── LICENSE
+```
+
+## 开发验证
+
+```bash
+bash tests/run-tests.sh
+```
+
+## 同步与许可
+
+- canonical source：`cc-skills/fact-check-cy/`
+- 当前独立仓库是发布镜像，不是新的编辑源。
+- License：Apache-2.0
+
+## 交流
+
+![wechat qr](assets/wechat-qr.jpg)

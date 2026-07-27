@@ -1,0 +1,7 @@
+interface:
+  display_name: "通用事实核查"
+  short_description: "逐声明核验事实、数字、引用、报告与媒体证据，识别来源和表达风险"
+  default_prompt: "使用 $fact-check-cy 核验这份材料中的关键声明，并给出可追溯的证据与结论。"
+
+policy:
+  allow_implicit_invocation: true
